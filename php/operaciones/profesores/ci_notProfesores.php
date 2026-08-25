@@ -2,6 +2,7 @@
 class ci_notProfesores extends gestion_escuela_ci
 {
     protected $s__filtro;
+	protected $s__profesores;
 	//-----------------------------------------------------------------------------------
 	//---- Configuraciones --------------------------------------------------------------
 	//-----------------------------------------------------------------------------------
@@ -19,17 +20,11 @@ class ci_notProfesores extends gestion_escuela_ci
 			if(isset($this->s__filtro)){
                 $where = $this->dep('filtro')->get_sql_where();	
                 $datos = toba::consulta_php('gestion_escuela')->get_profesoresconsulta($where);
+
+				$this-> s__profesores = $datos;
+
 				$cuadro->set_datos($datos); 
             }  
-	}
-
-	function evt__cuadro__seleccion($seleccion)
-	{
-		ei_arbol($seleccion);
-	}
-
-	function conf_evt__cuadro__seleccion(toba_evento_usuario $evento, $fila)
-	{
 	}
 
 	//-----------------------------------------------------------------------------------
@@ -51,6 +46,7 @@ class ci_notProfesores extends gestion_escuela_ci
 	function evt__filtro__cancelar()
 	{
 		unset($this->s__filtro);
+		unset($this->s__profesores);
 	}
 
 	/**
@@ -72,11 +68,14 @@ class ci_notProfesores extends gestion_escuela_ci
 			return;
 		}
 
-		$this->procesar_envio_profesor(array($datos[0]), $datos);
+		$this->procesar_envio_profesor(
+			array($datos[0]),
+			$datos
+		);
 	}
 
 
-	function procesar_envio_profesor($profesor, $alumnos)
+	function procesar_envio_profesor($profesor, $alumnos, $notificar = true)
 	{
 		$nombre_profesor = $profesor[0]['nombre_completo'];
 		$email = trim($profesor[0]['email']);
@@ -84,7 +83,9 @@ class ci_notProfesores extends gestion_escuela_ci
 		$carrera = $profesor[0]['desccarrera'];
 
 		if ($email == '') {
-			toba::notificacion()->agregar('El profesor no tiene email cargado.', 'error');
+			if ($notificar) {
+				toba::notificacion()->agregar('El profesor no tiene email cargado.', 'error');
+			}
 			return false;
 		}
 
@@ -93,20 +94,18 @@ class ci_notProfesores extends gestion_escuela_ci
 		$cuerpo = "
 		<div style='font-family: Arial, Helvetica, sans-serif; font-size:14px'>
 			<p>Estimado/a <b>$nombre_profesor</b>:</p>
-
 			<p>Se informa el listado de alumnos inscriptos a la mesa de examen.</p>
-
 			<p>
 				<b>Carrera:</b> $carrera<br>
 				<b>Materia:</b> $materia
 			</p>
-
 			<table border='1' cellpadding='5' cellspacing='0' width='100%'>
 				<tr style='background:#f2f2f2'>
 					<th>Legajo</th>
 					<th>Apellido y Nombre</th>
 					<th>DNI</th>
 					<th>Email</th>
+					<th>Fecha de inscripción</th>
 				</tr>";
 				foreach ($alumnos as $alumno) {
 
@@ -116,33 +115,29 @@ class ci_notProfesores extends gestion_escuela_ci
 				<td>{$alumno['apellido']}, {$alumno['nombre']}</td>
 				<td>{$alumno['dni']}</td>
 				<td>{$alumno['email_alumno']}</td>
+				<td>{$alumno['fecha_inscripcion']}</td>
 			</tr>";
 		}
 
 		$cuerpo .= "
 			</table>
-
 			<br><hr>
-
 			<small>
 				Gestión Escuela<br>
 				Mensaje generado automáticamente por el sistema.
 			</small>
-
 		</div>";
 
 		try {
 
 			$mail = new toba_mail($email, $asunto, $cuerpo);
-
 			$mail->set_configuracion_smtp('gestion_escuela_smtp');
 			$mail->set_html(true);
 			$mail->enviar();
 
-			toba::notificacion()->agregar(
-				'Correo enviado correctamente.',
-				'info'
-			);
+			if ($notificar) {
+				toba::notificacion()->agregar('Correo enviado correctamente.', 'info');
+			}
 
 			return true;
 
@@ -150,14 +145,83 @@ class ci_notProfesores extends gestion_escuela_ci
 
 			toba::logger()->error($e->getMessage());
 
-			toba::notificacion()->agregar(
-				'Error al enviar el correo.',
-				'error'
-			);
+			if ($notificar) {
+				toba::notificacion()->agregar('Error al enviar el correo.', 'error');
+			}
 
 			return false;
 		}
-	}			
-}
 
+	}			
+	//-----------------------------------------------------------------------------------
+	//---- Eventos ----------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function evt__mailmasivo()
+	{
+		if (empty($this->s__profesores)) {
+
+			toba::notificacion()->agregar(
+				'No hay profesores para enviar correo.',
+				'error'
+			);
+
+			return;
+		}
+
+		$enviados = 0;
+		$fallidos = 0;
+		$sin_alumnos = 0;
+
+		foreach ($this->s__profesores as $profesor) {
+
+			try {
+
+				// En get_profesoresconsulta():
+				// pro.id AS id_inscripcion
+				$id_profesor = $profesor['id_inscripcion'];
+
+				$alumnos = toba::consulta_php('gestion_escuela')
+							->get_alumnos_profesor($id_profesor);
+
+				if (empty($alumnos)) {
+					$sin_alumnos++;
+					continue;
+				}
+
+				$ok = $this->procesar_envio_profesor(
+					array($profesor),
+					$alumnos,
+					false
+				);
+
+				if ($ok) {
+					$enviados++;
+				} else {
+					$fallidos++;
+				}
+
+			} catch (Exception $e) {
+
+				toba::logger()->error($e->getMessage());
+				$fallidos++;
+			}
+		}
+
+		$mensaje = "Envío masivo finalizado: "
+				. "$enviados enviados, "
+				. "$fallidos con error";
+
+		if ($sin_alumnos > 0) {
+			$mensaje .= ", $sin_alumnos sin alumnos inscriptos";
+		}
+
+		toba::notificacion()->agregar(
+			$mensaje,
+			($fallidos == 0 && $sin_alumnos == 0)
+				? 'info'
+				: 'advertencia'
+		);
+	}
+}
 ?>

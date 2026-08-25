@@ -161,6 +161,7 @@
 		function get_profesoresconsulta($where='1=1')
 		{
 			$sql = "select
+						
 						pro.id AS id_inscripcion,
 						pro.apellido || ', ' || pro.nombre AS nombre_completo,
 						pro.email,
@@ -177,11 +178,14 @@
 
 			return toba::db()->consultar($sql);
 		}
+
+
+
 		function get_alumnos_profesor($id_profesor)
 		{
 			$id_profesor = (int)$id_profesor;
 
-			$sql = "selecy
+			$sql = "select
 						pro.id AS id_profesor,
 						pro.apellido || ', ' || pro.nombre AS nombre_completo,
 						pro.email,
@@ -196,14 +200,15 @@
 						alu.apellido,
 						alu.nombre,
 						alu.dni,
-						alu.email AS email_alumno
+						alu.email AS email_alumno,
+						TO_CHAR(insc.fecha_inscripcion, 'DD/MM/YYYY') AS fecha_inscripcion
 
 					from profesores pro
 					join materias ma on ma.id_profesor = pro.id
 					join carrera ca on ca.id = ma.id_carrera
  					join inscripciones insc on insc.id_materia = ma.id
 					join alumnos alu on alu.id = insc.id_alumno
-					wherew pro.id = $id_profesor
+					where pro.id = $id_profesor
 					order by
 						ma.nombre,
 						alu.apellido,
