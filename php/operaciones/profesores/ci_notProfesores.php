@@ -92,6 +92,7 @@ class ci_notProfesores extends gestion_escuela_ci
 		$asunto = "Listado de alumnos inscriptos - $materia";
 
 		$cuerpo = "
+		
 		<div style='font-family: Arial, Helvetica, sans-serif; font-size:14px'>
 			<p>Estimado/a <b>$nombre_profesor</b>:</p>
 			<p>Se informa el listado de alumnos inscriptos a la mesa de examen.</p>
@@ -105,7 +106,7 @@ class ci_notProfesores extends gestion_escuela_ci
 					<th>Apellido y Nombre</th>
 					<th>DNI</th>
 					<th>Email</th>
-					<th>Fecha de inscripción</th>
+					<th>Fecha de examen</th>
 				</tr>";
 				foreach ($alumnos as $alumno) {
 
@@ -123,8 +124,8 @@ class ci_notProfesores extends gestion_escuela_ci
 			</table>
 			<br><hr>
 			<small>
-				Gestión Escuela<br>
-				Mensaje generado automáticamente por el sistema.
+				ISFTyD 189<br>
+				Mensaje generado por el sistema.
 			</small>
 		</div>";
 
@@ -133,6 +134,7 @@ class ci_notProfesores extends gestion_escuela_ci
 			$mail = new toba_mail($email, $asunto, $cuerpo);
 			$mail->set_configuracion_smtp('gestion_escuela_smtp');
 			$mail->set_html(true);
+			$mail->CharSet = 'ISO-8859-1';
 			$mail->enviar();
 
 			if ($notificar) {
