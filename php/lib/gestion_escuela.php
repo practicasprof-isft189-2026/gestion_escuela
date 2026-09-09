@@ -13,11 +13,13 @@
 			where $where";
 			return toba::db()->consultar($sql);
 		}
+
         function get_profesores($where='1=1')
 		{
 			$sql="select * from profesores where $where";
 			return toba::db()->consultar($sql);
 		}
+
 		function get_nombresprofesores($where='1=1')
 		{
 			$sql="select id, apellido || ', ' || nombre as nombre_completo from profesores where $where";
@@ -88,12 +90,14 @@
 		function get_inscripciones($where='1=1')
 		{
 			$sql="select insc.id_inscripcion, alu.apellido || ', ' || alu.nombre as nombre_completo, insc.fecha_inscripcion, ei.descripcion as estado, ca.descripcion as desccarrera, ci.descripcion as desc_condicion, alu.legajo, alu.dni
+			,ma.nombre as descmateria
 			from inscripciones insc 
 			join estados_inscripcion ei on ei.id = insc.id_estado 
 			join condicion_inscripcion ci on ci.id = insc.id_condicion
 			join alumnos alu on insc.id_alumno=alu.id 
 			join materias ma on ma.id = insc.id_materia
 			join carrera ca on alu.id_carrera=ca.id where $where";
+			
 			return toba::db()->consultar($sql);
 		}
 
@@ -217,6 +221,32 @@
 			return toba::db()->consultar($sql);
 		}
 
-}
+		function his_reg_cabecera()
+		{
+			//Calculo el Periodo a partir de la fecha_inscripcion mas chica de la tabla inscripciones
 
-	
+			$sql="select min(fecha_inscripcion) as fecha_minima from inscripciones";
+			$fecha_minima = toba::db()->consultar($sql);
+			$periodo = $fecha_minima[0]['fecha_minima'];
+			$sql="INSERT INTO his_cabecera (fecha_baja,periodo,usuario) values (current_date, '$periodo', 'admin')";
+			$resultado=toba::db()->consultar($sql);
+
+			//Recuperar el maximo de los id de la tabla his_cabecera para usarlo como id_cabecera en la tabla his_detalle
+			$sql="select max(id) as max_id from his_cabecera";	
+			$id_cabecera = toba::db()->consultar($sql);
+			return $id_cabecera[0]['max_id'];
+		}
+
+		function his_reg_detalle($id_cabecera)
+		{
+			//Inserto en his_reg_detalle todos los registros de la tabla inscripciones con un sql de insercion que toma los datos de la tabla inscripciones y el id_cabecera pasado como parametro	
+
+			$sql = "INSERT INTO his_inscripciones (id_his_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo)
+					SELECT $id_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo
+					FROM inscripciones";
+
+			return toba::db()->consultar($sql);
+		}
+
+
+}

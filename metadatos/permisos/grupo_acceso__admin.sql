@@ -93,6 +93,27 @@ INSERT INTO apex_usuario_grupo_acc_item (proyecto, usuario_grupo_acc, item_id, i
 );
 --- FIN Grupo de desarrollo 4
 
+--- INICIO Grupo de desarrollo 11
+INSERT INTO apex_usuario_grupo_acc_item (proyecto, usuario_grupo_acc, item_id, item) VALUES (
+	'gestion_escuela', --proyecto
+	'admin', --usuario_grupo_acc
+	NULL, --item_id
+	'11000015'  --item
+);
+INSERT INTO apex_usuario_grupo_acc_item (proyecto, usuario_grupo_acc, item_id, item) VALUES (
+	'gestion_escuela', --proyecto
+	'admin', --usuario_grupo_acc
+	NULL, --item_id
+	'11000016'  --item
+);
+INSERT INTO apex_usuario_grupo_acc_item (proyecto, usuario_grupo_acc, item_id, item) VALUES (
+	'gestion_escuela', --proyecto
+	'admin', --usuario_grupo_acc
+	NULL, --item_id
+	'11000017'  --item
+);
+--- FIN Grupo de desarrollo 11
+
 --- INICIO Grupo de desarrollo 91
 INSERT INTO apex_usuario_grupo_acc_item (proyecto, usuario_grupo_acc, item_id, item) VALUES (
 	'gestion_escuela', --proyecto
