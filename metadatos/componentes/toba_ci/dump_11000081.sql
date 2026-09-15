@@ -77,11 +77,11 @@ INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, id
 	'11000081', --objeto_ci
 	'11000019', --pantalla
 	'pant_inicial', --identificador
-	NULL, --orden
-	'Pantalla Inicial', --etiqueta
+	'1', --orden
+	'Pantalla Principal', --etiqueta
 	NULL, --descripcion
 	NULL, --tip
-	NULL, --imagen_recurso_origen
+	'apex', --imagen_recurso_origen
 	NULL, --imagen
 	NULL, --objetos
 	NULL, --eventos
@@ -89,6 +89,6 @@ INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, id
 	NULL, --subclase_archivo
 	NULL, --template
 	NULL, --template_impresion
-	NULL  --punto_montaje
+	'4000002'  --punto_montaje
 );
 --- FIN Grupo de desarrollo 11
