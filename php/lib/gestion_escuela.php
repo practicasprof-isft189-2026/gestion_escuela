@@ -247,6 +247,38 @@
 
 			return toba::db()->consultar($sql);
 		}
+		
+		function get_his_cabecera($where='1=1')
+		{
+			$sql = "select id, fecha_baja, periodo, usuario 
+					from his_cabecera 
+					where $where
+					order by periodo desc";
+			return toba::db()->consultar($sql);
+		}
+
+		function get_his_inscripciones($where='1=1')
+		{
+			$sql = "select hc.id as id_cabecera, hc.periodo, hc.fecha_baja, hc.usuario,
+						alu.apellido || ', ' || alu.nombre as nombre_completo,
+						alu.legajo, alu.dni,
+						ma.nombre as descmateria,
+						ca.descripcion as desccarrera,
+						hi.fecha_inscripcion,
+						ei.descripcion as estado,
+						ci.descripcion as desc_condicion,
+						hi.motivo
+					from his_cabecera hc
+					join his_inscripciones hi on hi.id_his_cabecera = hc.id
+					join alumnos alu on alu.id = hi.id_alumno
+					join materias ma on ma.id = hi.id_materia
+					join carrera ca on ca.id = alu.id_carrera
+					join estados_inscripcion ei on ei.id = hi.id_estado
+					join condicion_inscripcion ci on ci.id = hi.id_condicion
+					where $where";
+			return toba::db()->consultar($sql);
+		}
+
 
 
 }

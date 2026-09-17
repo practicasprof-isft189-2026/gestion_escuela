@@ -20,24 +20,46 @@ class ci_pasar_historico extends gestion_escuela_ci
 	/**
 	 * Atrapa la interacci�n del usuario a trav�s del bot�n asociado. El m�todo no recibe par�metros
 	 */
-	function evt__phistorico()
-	{
+
+		function evt__phistorico()
+		{
+			try {
+
+				toba::db()->abrir_transaccion();
+
+				$id_cabecera = toba::consulta_php('gestion_escuela')
+									->his_reg_cabecera();
+
+				toba::consulta_php('gestion_escuela')
+					->his_reg_detalle($id_cabecera);
 
 
-		try{	
-			//Insertar datos en his_cabecera
-			$id_cabecera = toba::consulta_php('gestion_escuela')->his_reg_cabecera();
+				toba::db()->ejecutar(
+					"DELETE FROM inscripciones"
+				);
 
-			//Insertar datos en his_detalle
-			$datos = toba::consulta_php('gestion_escuela')->his_reg_detalle($id_cabecera);
-			
-		}catch (toba_error_db $e){
+				toba::db()->cerrar_transaccion();
 
-			toba::notificacion()->agregar('ATENCION!! El registro ya Existe.');
+				// Mensaje de éxito
+				toba::notificacion()->agregar(
+					'El período fue pasado al histórico correctamente y se eliminaron todas las inscripciones actuales.'
+				);
 
+			} catch (toba_error_db $e) {
+
+				// Si algo falla, deshacer todo
+				toba::db()->rollback();
+
+				toba::notificacion()->agregar(
+					'ATENCION!! No se pudo pasar el período al histórico. Las inscripciones no fueron eliminadas.'
+				);
+			}
 		}
 
-	}
+
+
+
+
 
 	//-----------------------------------------------------------------------------------
 	//---- cuadro -----------------------------------------------------------------------
@@ -52,8 +74,7 @@ class ci_pasar_historico extends gestion_escuela_ci
 				//if(isset($this->s__filtro)){
                 //$where = $this->dep('filtro')->get_sql_where();	
                 $datos = toba::consulta_php('gestion_escuela')->get_inscripciones();
-				$cuadro->set_datos($datos); 
-             
+				$cuadro->set_datos($datos);      
 
 	}
 
