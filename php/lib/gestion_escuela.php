@@ -247,6 +247,31 @@
 
 			return toba::db()->consultar($sql);
 		}
+
+		function restaurar_inscripciones($id_cabecera)
+		{
+			$id_cabecera = (int)$id_cabecera;
+			if ($id_cabecera <= 0) {
+				return 0;
+			}
+			$sql = "SELECT COUNT(*) AS cantidad FROM his_inscripciones WHERE id_his_cabecera = $id_cabecera";
+			$resultado = toba::db()->consultar($sql);
+			$cantidad = (int)$resultado[0]['cantidad'];
+			if ($cantidad === 0) {
+				return 0;
+			}
+			toba::db()->ejecutar("DELETE FROM inscripciones");
+			$sql = "INSERT INTO inscripciones (id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo)
+					SELECT id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo
+					FROM his_inscripciones
+					WHERE id_his_cabecera = $id_cabecera";
+				
+			toba::db()->ejecutar($sql);
+			return $cantidad;
+		
+		}
+
+
 		
 		function get_his_cabecera($where='1=1')
 		{

@@ -2,6 +2,7 @@
 class ci_his_consultas extends gestion_escuela_ci
 {
 	protected $s__filtro;
+	protected $s__id_cabecera;
 	
 	
 	//-----------------------------------------------------------------------------------
@@ -29,6 +30,58 @@ class ci_his_consultas extends gestion_escuela_ci
 	{
 	}
 
+	function evt__restaurar()
+	{
+        if (
+                !isset($this->s__id_cabecera) ||
+                (int) $this->s__id_cabecera <= 0
+        ) {
+                toba::notificacion()->agregar(
+                        'No se pudo identificar el periodo seleccionado.',
+                        'error'
+                );
+                return;
+        }
+
+        try {
+                toba::db()->abrir_transaccion();
+
+                $cantidad = toba::consulta_php('gestion_escuela')
+                        ->restaurar_inscripciones($this->s__id_cabecera);
+
+                if ($cantidad === 0) {
+                        toba::db()->rollback();
+
+                        toba::notificacion()->agregar(
+                                'El periodo seleccionado no contiene inscripciones.',
+                                'error'
+                        );
+                        return;
+                }
+
+                toba::db()->cerrar_transaccion();
+
+                toba::notificacion()->agregar(
+                        "Se restauraron $cantidad inscripciones correctamente.",
+                        'info'
+                );
+
+                $this->dep('datos')->resetear();
+                unset($this->s__id_cabecera);
+                $this->set_pantalla('pant_inicial');
+
+        } catch (toba_error_db $e) {
+                toba::db()->rollback();
+
+                toba::notificacion()->agregar(
+                        'No se pudo restaurar el periodo. Las inscripciones actuales no fueron modificadas.',
+                        'error'
+                );
+        }
+	}
+
+
+
 	//-----------------------------------------------------------------------------------
 	//---- cuadro -----------------------------------------------------------------------
 	//-----------------------------------------------------------------------------------
@@ -50,6 +103,12 @@ class ci_his_consultas extends gestion_escuela_ci
 	 */
 	function evt__cuadro__seleccion($seleccion)
 	{
+		if (!isset($seleccion['id'])) {
+        toba::notificacion()->agregar(
+                'No se pudo identificar el periodo seleccionado.','error');
+        return;
+		}
+		$this->s__id_cabecera = (int) $seleccion['id'];
 		$this->dep('datos')->cargar($seleccion);
         $this->set_pantalla('pant_edicion'); 
 	}
@@ -64,10 +123,18 @@ class ci_his_consultas extends gestion_escuela_ci
 	 */
 	function conf__cuadro_con(gestion_escuela_ei_cuadro $cuadro)
 	{
-		$where = isset($this->s__filtro) ? $this->dep('filtro')->get_sql_where() : '1=1';
-        	$datos = toba::consulta_php('gestion_escuela')->get_his_inscripciones($where);
-        	$cuadro->set_datos($datos);
+		if(!isset($this->s__id_cabecera)){
+			$cuadro ->set_datos(array());
+			return;
+		}
+
+		$where = 'hi.id_his_cabecera = '.(int) $this->s__id_cabecera;
+
+		$datos = toba::consulta_php('gestion_escuela')->get_his_inscripciones($where);
+
+		$cuadro->set_datos($datos);	
 	}
+
 
 	//-----------------------------------------------------------------------------------
 	//---- filtro -----------------------------------------------------------------------
