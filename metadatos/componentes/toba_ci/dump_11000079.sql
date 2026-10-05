@@ -54,7 +54,13 @@ INSERT INTO apex_objeto_eventos (proyecto, evento_id, objeto, identificador, eti
 	'Pasar Historico', --etiqueta
 	'1', --maneja_datos
 	NULL, --sobre_fila
-	NULL, --confirmacion
+	'ADVERTENCIA
+
+Está a punto de realizarse el pase de todos los registros al histórico.
+
+Una vez realizada esta operación, los registros serán eliminados de la información actual y no podrán ser restaurados.
+
+¿Está seguro de que desea continuar?', --confirmacion
 	NULL, --estilo
 	'apex', --imagen_recurso_origen
 	'abrir.gif', --imagen
@@ -67,11 +73,11 @@ INSERT INTO apex_objeto_eventos (proyecto, evento_id, objeto, identificador, eti
 	NULL, --display_datos_cargados
 	NULL, --grupo
 	NULL, --accion
-	NULL, --accion_imphtml_debug
+	'0', --accion_imphtml_debug
 	NULL, --accion_vinculo_carpeta
 	NULL, --accion_vinculo_item
 	NULL, --accion_vinculo_objeto
-	NULL, --accion_vinculo_popup
+	'0', --accion_vinculo_popup
 	NULL, --accion_vinculo_popup_param
 	NULL, --accion_vinculo_target
 	NULL, --accion_vinculo_celda
