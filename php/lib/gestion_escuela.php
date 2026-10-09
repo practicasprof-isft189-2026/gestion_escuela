@@ -213,6 +213,7 @@
  					join inscripciones insc on insc.id_materia = ma.id
 					join alumnos alu on alu.id = insc.id_alumno
 					where pro.id = $id_profesor
+					  and insc.id_estado = 2
 					order by
 						ma.nombre,
 						alu.apellido,
@@ -221,6 +222,11 @@
 			return toba::db()->consultar($sql);
 		}
 
+		function get_cantidad_inscripciones()
+		{
+			$datos = toba::db()->consultar("select count(*) as cantidad from inscripciones");
+			return (int) $datos[0]['cantidad'];
+		}
 		function his_reg_cabecera()
 		{
 			//Calculo el Periodo a partir de la fecha_inscripcion mas chica de la tabla inscripciones
@@ -228,7 +234,8 @@
 			$sql="select min(fecha_inscripcion) as fecha_minima from inscripciones";
 			$fecha_minima = toba::db()->consultar($sql);
 			$periodo = $fecha_minima[0]['fecha_minima'];
-			$sql="INSERT INTO his_cabecera (fecha_baja,periodo,usuario) values (current_date, '$periodo', 'admin')";
+			$usuario = toba::db()->quote(toba::usuario()->get_id());
+			$sql="INSERT INTO his_cabecera (fecha_baja,periodo,usuario) values (current_date, '$periodo', $usuario)";
 			$resultado=toba::db()->consultar($sql);
 
 			//Recuperar el maximo de los id de la tabla his_cabecera para usarlo como id_cabecera en la tabla his_detalle
@@ -241,8 +248,8 @@
 		{
 			//Inserto en his_reg_detalle todos los registros de la tabla inscripciones con un sql de insercion que toma los datos de la tabla inscripciones y el id_cabecera pasado como parametro	
 
-			$sql = "INSERT INTO his_inscripciones (id_his_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo)
-					SELECT $id_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo
+			$sql = "INSERT INTO his_inscripciones (id_his_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo, fecha_notificado)
+					SELECT $id_cabecera, id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo, fecha_notificado
 					FROM inscripciones";
 
 			return toba::db()->consultar($sql);
@@ -261,8 +268,8 @@
 				return 0;
 			}
 			toba::db()->ejecutar("DELETE FROM inscripciones");
-			$sql = "INSERT INTO inscripciones (id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo)
-					SELECT id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo
+			$sql = "INSERT INTO inscripciones (id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo, fecha_notificado)
+					SELECT id_alumno, id_materia, fecha_inscripcion, id_estado, id_condicion, motivo, fecha_notificado
 					FROM his_inscripciones
 					WHERE id_his_cabecera = $id_cabecera";
 				

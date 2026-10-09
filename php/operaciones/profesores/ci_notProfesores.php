@@ -79,8 +79,6 @@ class ci_notProfesores extends gestion_escuela_ci
 	{
 		$nombre_profesor = $profesor[0]['nombre_completo'];
 		$email = trim($profesor[0]['email']);
-		$materia = $profesor[0]['descmateria'];
-		$carrera = $profesor[0]['desccarrera'];
 
 		if ($email == '') {
 			if ($notificar) {
@@ -89,16 +87,36 @@ class ci_notProfesores extends gestion_escuela_ci
 			return false;
 		}
 
-		$asunto = "Listado de alumnos inscriptos - $materia";
+		// Un profesor puede tener varias materias: agrupo los alumnos por materia
+		$materias = array();
+		foreach ($alumnos as $alumno) {
+			$id_materia = $alumno['id_materia'];
+			if (!isset($materias[$id_materia])) {
+				$materias[$id_materia] = array(
+					'materia' => $alumno['descmateria'],
+					'carrera' => $alumno['desccarrera'],
+					'alumnos' => array()
+				);
+			}
+			$materias[$id_materia]['alumnos'][] = $alumno;
+		}
+
+		$asunto = "Listado de alumnos inscriptos";
+		if (count($materias) == 1) {
+			$unica = reset($materias);
+			$asunto .= " - " . $unica['materia'];
+		}
 
 		$cuerpo = "
-		
 		<div style='font-family: Arial, Helvetica, sans-serif; font-size:14px'>
 			<p>Estimado/a <b>$nombre_profesor</b>:</p>
-			<p>Se informa el listado de alumnos inscriptos a la mesa de examen.</p>
+			<p>Se informa el listado de alumnos inscriptos a las mesas de examen (inscripciones aprobadas).</p>";
+
+		foreach ($materias as $grupo) {
+			$cuerpo .= "
 			<p>
-				<b>Carrera:</b> $carrera<br>
-				<b>Materia:</b> $materia
+				<b>Carrera:</b> {$grupo['carrera']}<br>
+				<b>Materia:</b> {$grupo['materia']}
 			</p>
 			<table border='1' cellpadding='5' cellspacing='0' width='100%'>
 				<tr style='background:#f2f2f2'>
@@ -108,21 +126,23 @@ class ci_notProfesores extends gestion_escuela_ci
 					<th>Email</th>
 					<th>Fecha de examen</th>
 				</tr>";
-				foreach ($alumnos as $alumno) {
-
+			foreach ($grupo['alumnos'] as $alumno) {
+				$cuerpo .= "
+				<tr>
+					<td>{$alumno['legajo']}</td>
+					<td>{$alumno['apellido']}, {$alumno['nombre']}</td>
+					<td>{$alumno['dni']}</td>
+					<td>{$alumno['email_alumno']}</td>
+					<td>{$alumno['fecha_inscripcion']}</td>
+				</tr>";
+			}
 			$cuerpo .= "
-			<tr>
-				<td>{$alumno['legajo']}</td>
-				<td>{$alumno['apellido']}, {$alumno['nombre']}</td>
-				<td>{$alumno['dni']}</td>
-				<td>{$alumno['email_alumno']}</td>
-				<td>{$alumno['fecha_inscripcion']}</td>
-			</tr>";
+			</table>
+			<br>";
 		}
 
 		$cuerpo .= "
-			</table>
-			<br><hr>
+			<hr>
 			<small>
 				ISFTyD 189<br>
 				Mensaje generado por el sistema.
@@ -131,7 +151,7 @@ class ci_notProfesores extends gestion_escuela_ci
 
 		try {
 
-			$mail = new toba_mail($email, $asunto, $cuerpo);
+			$mail = new toba_mail($email, $asunto, $this->texto_mail($cuerpo));
 			$mail->set_configuracion_smtp('gestion_escuela_smtp');
 			$mail->set_html(true);
 			$mail->CharSet = 'ISO-8859-1';
@@ -174,6 +194,7 @@ class ci_notProfesores extends gestion_escuela_ci
 		$enviados = 0;
 		$fallidos = 0;
 		$sin_alumnos = 0;
+		$procesados = array();
 
 		foreach ($this->s__profesores as $profesor) {
 
@@ -182,6 +203,12 @@ class ci_notProfesores extends gestion_escuela_ci
 				// En get_profesoresconsulta():
 				// pro.id AS id_inscripcion
 				$id_profesor = $profesor['id_inscripcion'];
+
+				// El cuadro trae una fila por materia: a cada profesor se le envia un solo mail
+				if (isset($procesados[$id_profesor])) {
+					continue;
+				}
+				$procesados[$id_profesor] = true;
 
 				$alumnos = toba::consulta_php('gestion_escuela')
 							->get_alumnos_profesor($id_profesor);

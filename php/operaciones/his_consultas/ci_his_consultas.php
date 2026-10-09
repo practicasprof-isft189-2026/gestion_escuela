@@ -50,7 +50,7 @@ class ci_his_consultas extends gestion_escuela_ci
                         ->restaurar_inscripciones($this->s__id_cabecera);
 
                 if ($cantidad === 0) {
-                        toba::db()->rollback();
+                        toba::db()->abortar_transaccion();
 
                         toba::notificacion()->agregar(
                                 'El periodo seleccionado no contiene inscripciones.',
@@ -71,7 +71,7 @@ class ci_his_consultas extends gestion_escuela_ci
                 $this->set_pantalla('pant_inicial');
 
         } catch (toba_error_db $e) {
-                toba::db()->rollback();
+                toba::db()->abortar_transaccion();
 
                 toba::notificacion()->agregar(
                         'No se pudo restaurar el periodo. Las inscripciones actuales no fueron modificadas.',

@@ -23,6 +23,11 @@ class ci_pasar_historico extends gestion_escuela_ci
 
 		function evt__phistorico()
 		{
+			if (toba::consulta_php('gestion_escuela')->get_cantidad_inscripciones() == 0) {
+				toba::notificacion()->agregar('No hay inscripciones cargadas para pasar al historico.', 'info');
+				return;
+			}
+
 			try {
 
 				toba::db()->abrir_transaccion();
@@ -42,16 +47,18 @@ class ci_pasar_historico extends gestion_escuela_ci
 
 				// Mensaje de éxito
 				toba::notificacion()->agregar(
-					'El período fue pasado al histórico correctamente y se eliminaron todas las inscripciones actuales.'
+					'El período fue pasado al histórico correctamente y se eliminaron todas las inscripciones actuales.',
+					'info'
 				);
 
 			} catch (toba_error_db $e) {
 
 				// Si algo falla, deshacer todo
-				toba::db()->rollback();
+				toba::db()->abortar_transaccion();
 
 				toba::notificacion()->agregar(
-					'ATENCION!! No se pudo pasar el período al histórico. Las inscripciones no fueron eliminadas.'
+					'ATENCION!! No se pudo pasar el período al histórico. Las inscripciones no fueron eliminadas.',
+					'error'
 				);
 			}
 		}
