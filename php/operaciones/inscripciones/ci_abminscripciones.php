@@ -173,7 +173,15 @@ class ci_abminscripciones extends gestion_escuela_ci
 	function conf__formulario_inscri(gestion_escuela_ei_formulario $form)
 	{
 		if ($this->dep('datos')->esta_cargada()) {
-			return $this->dep('datos')->get();    
+			$datos = $this->dep('datos')->get();
+			// El combo trabaja con el id de la mesa: busco la mesa que corresponde a la fecha guardada
+			$sql = "select id from mesas_examen where id_materia = " . (int) $datos['id_materia']
+				. " and fecha = " . toba::db()->quote($datos['fecha_inscripcion']) . " order by id limit 1";
+			$mesa = toba::db()->consultar($sql);
+			if (!empty($mesa)) {
+				$datos['fecha_inscripcion'] = $mesa[0]['id'];
+			}
+			return $datos;
 		}			
 	}
 
@@ -200,6 +208,22 @@ class ci_abminscripciones extends gestion_escuela_ci
         // devolvemos el original para que la base de datos decida qué hacer.
         return $fecha_pantalla;
     }
+	/**
+	 * El combo de fecha devuelve el id de la mesa. Lo cambia por la fecha de esa mesa.
+	 * Devuelve false (y avisa) si la materia no tiene una mesa valida.
+	 */
+	function resolver_fecha_mesa(&$datos)
+	{
+		$id_mesa = isset($datos['fecha_inscripcion']) ? (int) $datos['fecha_inscripcion'] : 0;
+		$fechas = ($id_mesa > 0) ? $this->get_fechamesa($id_mesa) : array();
+		if (empty($fechas)) {
+			toba::notificacion()->agregar('La materia seleccionada no tiene una mesa de examen cargada. La inscripcion no fue guardada.', 'error');
+			return false;
+		}
+		$datos['fecha_inscripcion'] = $fechas[0]['fecha'];
+		return true;
+	}
+
 	function get_fechamesa($id){
 		$sql = "select fecha from mesas_examen where id=$id";
 		
@@ -209,10 +233,9 @@ class ci_abminscripciones extends gestion_escuela_ci
 	{
 		try{
 			$datos['id_alumno']= $this->s__datos[0]['id'];
-			$idfecha=$datos['fecha_inscripcion'];
-			$fechas=$this->get_fechamesa($idfecha);
-			
-			$datos['fecha_inscripcion']=$fechas[0]['fecha'];
+			if (!$this->resolver_fecha_mesa($datos)) {
+				return;
+			}
 			//Formateo de fecha porque postgres me da error de formato, valor fuera de rango
 			//$datos['fecha_inscripcion'] = $this->formatear_fecha_bd($datos['fecha_inscripcion']);
 			$this->dep('datos')->set($datos);
@@ -221,7 +244,9 @@ class ci_abminscripciones extends gestion_escuela_ci
 		}catch (toba_error_db $e){
 			
 			if($e->get_sqlstate()=="db_23505"){
-				toba::notificacion()->agregar('ATENCION!! El registro ya Existe.');
+				toba::notificacion()->agregar('ATENCION!! El alumno ya esta inscripto en esa materia y fecha.');
+			}else{
+				toba::notificacion()->agregar('No se pudo guardar la inscripcion. Codigo de error: '.$e->get_sqlstate(), 'error');
 			}
 		}		
 	}
@@ -249,16 +274,17 @@ class ci_abminscripciones extends gestion_escuela_ci
 	{
 		try{
 			//$datos['fecha_inscripcion'] = $this->formatear_fecha_bd($datos['fecha_inscripcion']);
-			$idfecha=$datos['fecha_inscripcion'];
-			$fechas=$this->get_fechamesa($idfecha);
-			
-			$datos['fecha_inscripcion']=$fechas[0]['fecha'];
+			if (!$this->resolver_fecha_mesa($datos)) {
+				return;
+			}
 			$this->dep('datos')->set($datos);
 			$this->dep('datos')->sincronizar();
 			$this->dep('datos')->resetear();
 		}catch (toba_error_db $e){
 			if($e->get_sqlstate()=="db_23505"){
-				toba::notificacion()->agregar('ATENCION!! El registro ya Existe.');
+				toba::notificacion()->agregar('ATENCION!! El alumno ya esta inscripto en esa materia y fecha.');
+			}else{
+				toba::notificacion()->agregar('No se pudo guardar la inscripcion. Codigo de error: '.$e->get_sqlstate(), 'error');
 			}
 		}		
 	}

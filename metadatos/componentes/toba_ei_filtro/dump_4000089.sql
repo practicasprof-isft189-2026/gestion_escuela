@@ -132,7 +132,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'4000011', --objeto_ei_filtro_col
 	'4000089', --objeto_ei_filtro
 	'gestion_escuela', --objeto_ei_filtro_proyecto
-	'cadena', --tipo
+	'opciones', --tipo
 	'id_profesor', --nombre
 	'id_profesor', --expresion
 	'Profersor', --etiqueta
@@ -142,20 +142,20 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'1', --orden
 	NULL, --estado_defecto
 	'0', --opciones_es_multiple
-	NULL, --opciones_ef
-	NULL, --carga_metodo
+	'ef_combo', --opciones_ef
+	'get_nombresprofesores', --carga_metodo
 	NULL, --carga_clase
 	NULL, --carga_include
 	NULL, --carga_dt
-	NULL, --carga_consulta_php
+	'91000001', --carga_consulta_php
 	NULL, --carga_sql
-	NULL, --carga_fuente
+	'gestion_escuela', --carga_fuente
 	NULL, --carga_lista
-	NULL, --carga_col_clave
-	NULL, --carga_col_desc
-	'0', --carga_permite_no_seteado
-	NULL, --carga_no_seteado
-	NULL, --carga_no_seteado_ocultar
+	'id', --carga_col_clave
+	'nombre_completo', --carga_col_desc
+	'1', --carga_permite_no_seteado
+	'--SELECCIONE--', --carga_no_seteado
+	'0', --carga_no_seteado_ocultar
 	NULL, --carga_maestros
 	NULL, --edit_tamano
 	NULL, --edit_maximo
@@ -172,7 +172,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	NULL, --popup_carga_desc_clase
 	NULL, --popup_carga_desc_include
 	NULL, --popup_puede_borrar_estado
-	NULL, --punto_montaje
+	'4000002', --punto_montaje
 	NULL, --check_valor_si
 	NULL, --check_valor_no
 	NULL, --check_desc_si
@@ -190,7 +190,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'4000013', --objeto_ei_filtro_col
 	'4000089', --objeto_ei_filtro
 	'gestion_escuela', --objeto_ei_filtro_proyecto
-	'cadena', --tipo
+	'opciones', --tipo
 	'id_materia', --nombre
 	'id_materia', --expresion
 	'Materia', --etiqueta
@@ -200,21 +200,21 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'2', --orden
 	NULL, --estado_defecto
 	'0', --opciones_es_multiple
-	NULL, --opciones_ef
-	NULL, --carga_metodo
+	'ef_combo', --opciones_ef
+	'get_materias_xprofesor', --carga_metodo
 	NULL, --carga_clase
 	NULL, --carga_include
 	NULL, --carga_dt
-	NULL, --carga_consulta_php
+	'91000001', --carga_consulta_php
 	NULL, --carga_sql
-	NULL, --carga_fuente
+	'gestion_escuela', --carga_fuente
 	NULL, --carga_lista
-	NULL, --carga_col_clave
-	NULL, --carga_col_desc
-	'0', --carga_permite_no_seteado
-	NULL, --carga_no_seteado
-	NULL, --carga_no_seteado_ocultar
-	NULL, --carga_maestros
+	'id', --carga_col_clave
+	'nombre', --carga_col_desc
+	'1', --carga_permite_no_seteado
+	'--SELECCIONE--', --carga_no_seteado
+	'0', --carga_no_seteado_ocultar
+	'id_profesor', --carga_maestros
 	NULL, --edit_tamano
 	NULL, --edit_maximo
 	NULL, --edit_mascara
@@ -230,7 +230,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	NULL, --popup_carga_desc_clase
 	NULL, --popup_carga_desc_include
 	NULL, --popup_puede_borrar_estado
-	NULL, --punto_montaje
+	'4000002', --punto_montaje
 	NULL, --check_valor_si
 	NULL, --check_valor_no
 	NULL, --check_desc_si
@@ -248,7 +248,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'4000014', --objeto_ei_filtro_col
 	'4000089', --objeto_ei_filtro
 	'gestion_escuela', --objeto_ei_filtro_proyecto
-	'cadena', --tipo
+	'opciones', --tipo
 	'id_condicion', --nombre
 	'id_condicion', --expresion
 	'Condicion', --etiqueta
@@ -258,20 +258,20 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	'3', --orden
 	NULL, --estado_defecto
 	'0', --opciones_es_multiple
-	NULL, --opciones_ef
-	NULL, --carga_metodo
+	'ef_combo', --opciones_ef
+	'get_condiciones', --carga_metodo
 	NULL, --carga_clase
 	NULL, --carga_include
 	NULL, --carga_dt
-	NULL, --carga_consulta_php
+	'91000001', --carga_consulta_php
 	NULL, --carga_sql
-	NULL, --carga_fuente
+	'gestion_escuela', --carga_fuente
 	NULL, --carga_lista
-	NULL, --carga_col_clave
-	NULL, --carga_col_desc
-	'0', --carga_permite_no_seteado
-	NULL, --carga_no_seteado
-	NULL, --carga_no_seteado_ocultar
+	'id', --carga_col_clave
+	'descripcion', --carga_col_desc
+	'1', --carga_permite_no_seteado
+	'--SELECCIONE--', --carga_no_seteado
+	'0', --carga_no_seteado_ocultar
 	NULL, --carga_maestros
 	NULL, --edit_tamano
 	NULL, --edit_maximo
@@ -288,7 +288,7 @@ INSERT INTO apex_objeto_ei_filtro_col (objeto_ei_filtro_col, objeto_ei_filtro, o
 	NULL, --popup_carga_desc_clase
 	NULL, --popup_carga_desc_include
 	NULL, --popup_puede_borrar_estado
-	NULL, --punto_montaje
+	'4000002', --punto_montaje
 	NULL, --check_valor_si
 	NULL, --check_valor_no
 	NULL, --check_desc_si

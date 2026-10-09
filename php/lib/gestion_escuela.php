@@ -5,10 +5,10 @@
 		{
 			$sql="select alu.id, alu.legajo, alu.nombre, 
 							alu.apellido, alu.dni, alu.email, 
-							ca.descripcion as desccarrera,
+							coalesce(ca.descripcion, 'SIN CARRERA') as desccarrera,
 							alu.id_carrera
 			 from alumnos alu
-			 join carrera ca 
+			 left join carrera ca 
 			 on alu.id_carrera = ca.id
 			where $where";
 			return toba::db()->consultar($sql);
@@ -41,28 +41,28 @@
 
 		function get_materiasconcarrera($where='1=1')
 		{
-			$sql="select ma.id, ma.codigo, ma.nombre, ma.anio, pro.apellido || ', ' || pro.nombre as descprofesor, ca.descripcion desccarrera 
+			$sql="select ma.id, ma.codigo, ma.nombre, ma.anio, coalesce(pro.apellido || ', ' || pro.nombre, 'SIN PROFESOR') as descprofesor, coalesce(ca.descripcion, 'SIN CARRERA') as desccarrera 
 			from materias ma
-			join carrera ca
+			left join carrera ca
 			on ma.id_carrera=ca.id
-			join profesores pro
+			left join profesores pro
 			on pro.id=ma.id_profesor
 			where $where";
 			return toba::db()->consultar($sql);
 		}
 		function get_mesas($where='1=1')
 		{
-			$sql="select me.id, ca.descripcion as desccarrera,
+			$sql="select me.id, coalesce(ca.descripcion, 'SIN CARRERA') as desccarrera,
 			             ma.nombre as descmateria, 
-						 pro.apellido || ', ' || pro.nombre as descprofesor, 
+						 coalesce(pro.apellido || ', ' || pro.nombre, 'SIN PROFESOR') as descprofesor, 
 						 me.fecha, 
-						 au.descripcion as descaula,
+						 coalesce(au.descripcion, 'SIN AULA') as descaula,
 						 ca.id as id_carrera 
 				    from mesas_examen me 
 					join materias ma on ma.id = me.id_materia 
-					join profesores pro on pro.id = ma.id_profesor 
-					join carrera ca on ma.id_carrera=ca.id 
-					join aulas au on me.id_aula=au.id 
+					left join profesores pro on pro.id = ma.id_profesor 
+					left join carrera ca on ma.id_carrera=ca.id 
+					left join aulas au on me.id_aula=au.id 
 					where $where";
 			return toba::db()->consultar($sql);
 		}
@@ -96,7 +96,7 @@
 			join condicion_inscripcion ci on ci.id = insc.id_condicion
 			join alumnos alu on insc.id_alumno=alu.id 
 			join materias ma on ma.id = insc.id_materia
-			join carrera ca on alu.id_carrera=ca.id where $where";
+			left join carrera ca on alu.id_carrera=ca.id where $where";
 			
 			return toba::db()->consultar($sql);
 		}
@@ -107,7 +107,7 @@
 			from inscripciones insc 
 			join estados_inscripcion ei on ei.id = insc.id_estado 
 			join alumnos alu on insc.id_alumno=alu.id 
-			join carrera ca on alu.id_carrera=ca.id where $where";
+			left join carrera ca on alu.id_carrera=ca.id where $where";
 			return toba::db()->consultar($sql);
 		}
 
@@ -142,7 +142,7 @@
 			join estados_inscripcion ei on ei.id = insc.id_estado
 			join condicion_inscripcion ci on ci.id = insc.id_condicion
 			join materias ma on ma.id=insc.id_materia 
-			join carrera ca on ma.id_carrera=ca.id where insc.id_alumno=$idalumno";
+			left join carrera ca on ma.id_carrera=ca.id where insc.id_alumno=$idalumno";
 			return toba::db()->consultar($sql);
 		}
 
@@ -156,7 +156,7 @@
 
 		function get_mesaincripcion($idmateria)
 		{
-			$sql="select * from mesas_examen where id_materia=$idmateria";
+			$sql="select * from mesas_examen where id_materia=$idmateria order by fecha";
 		
 			return toba::db()->consultar($sql);
 		}
@@ -297,7 +297,7 @@
 					join his_inscripciones hi on hi.id_his_cabecera = hc.id
 					join alumnos alu on alu.id = hi.id_alumno
 					join materias ma on ma.id = hi.id_materia
-					join carrera ca on ca.id = alu.id_carrera
+					left join carrera ca on ca.id = alu.id_carrera
 					join estados_inscripcion ei on ei.id = hi.id_estado
 					join condicion_inscripcion ci on ci.id = hi.id_condicion
 					where $where";
